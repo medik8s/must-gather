@@ -10,8 +10,11 @@ resources+=(ns/poison-pill ns/openshift-machine-api)
 resources+=(nodes)
 resources+=(machines)
 
-# Nodes and Machines
+
 resources+=(machinehealthchecks)
+resources+=(poisonpillremediations)
+resources+=(poisonpillremediationtemplates)
+resources+=(poisonpillconfigs)
 
 # Run the collection of resources using must-gather
 for resource in "${resources[@]}"; do
