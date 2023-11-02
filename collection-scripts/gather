@@ -21,11 +21,14 @@ operators=(
     fence-agents-remediation
 )
 for OP_NAME in "${operators[@]}"; do
-    OP_NS=$(oc get subscriptions.operators.coreos.com -A -o=json | jq --raw-output ".items[] | select(.spec.name | contains(\"${OP_NAME}\")) | .metadata.namespace")
-    [[ -z $OP_NS ]] && continue
-    if ! printf "%s\n" "${named_resources[@]}" | grep -xq "ns/$OP_NS"; then
-        named_resources+=(ns/${OP_NS})
-    fi
+    # get namespaces of subscriptions, there can be multiple per operator!
+    OP_NAMESPACES=($(oc get subscriptions.operators.coreos.com -A -o=json | jq --raw-output ".items[] | select(.spec.name | contains(\"${OP_NAME}\")) | .metadata.namespace"))
+    [[ -z OP_NAMESPACES ]] && continue
+    for OP_NS in "${OP_NAMESPACES[@]}"; do
+        if ! printf "%s\n" "${named_resources[@]}" | grep -xq "ns/$OP_NS"; then
+            named_resources+=(ns/${OP_NS})
+        fi
+    done
 done
 
 # Medik8s pods
