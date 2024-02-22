@@ -51,12 +51,14 @@ named_resources+=(${MEDIK8S_CRDS})
 MEDIK8S_CRS=$(oc get crds -o jsonpath='{range .items[*]}{.metadata.name}{"\n"}{end}' | grep 'medik8s' | sed -z 's/\n/ /g')
 group_resources+=(${MEDIK8S_CRS})
 
-# Metal3
-group_resources+=(metal3remediationtemplates)
-group_resources+=(metal3remediations)
-
 # Run the Collection of Resources using inspect
 oc adm inspect --dest-dir must-gather --rotated-pod-logs --all-namespaces "${named_resources[@]}"
+group_resources_text=$(IFS=, ; echo "${group_resources[*]}")
+oc adm inspect --dest-dir must-gather --rotated-pod-logs --all-namespaces "${group_resources_text}"
+
+# Handle metal3 separately as they don't exist in OCP 4.12 and below, and they would fail gathering all other resources
+group_resources=(metal3remediationtemplates)
+group_resources+=(metal3remediations)
 group_resources_text=$(IFS=, ; echo "${group_resources[*]}")
 oc adm inspect --dest-dir must-gather --rotated-pod-logs --all-namespaces "${group_resources_text}"
 
