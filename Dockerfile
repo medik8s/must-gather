@@ -1,7 +1,7 @@
-FROM quay.io/openshift/origin-must-gather:4.14 as builder
+FROM quay.io/openshift/origin-must-gather:4.17 AS builder
 
-FROM registry.access.redhat.com/ubi8/ubi-minimal
-RUN microdnf install tar rsync jq
+FROM registry.access.redhat.com/ubi9/ubi-minimal
+RUN microdnf install -y tar rsync jq
 
 COPY --from=builder /usr/bin/oc /usr/bin/oc
 
