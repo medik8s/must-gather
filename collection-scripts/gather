@@ -21,16 +21,32 @@ operators=(
     fence-agents-remediation
 )
 for OP_NAME in "${operators[@]}"; do
-    # get namespaces of subscriptions, there can be multiple per operator!
-    OP_NAMESPACES=($(oc get subscriptions.operators.coreos.com -A -o=json | jq --raw-output ".items[] | select(.spec.name | contains(\"${OP_NAME}\")) | .metadata.namespace"))
-    [[ -z OP_NAMESPACES ]] && continue
+    OP_NAMESPACES=()
+    # get namespaces of subscriptions(OLM v0)
+    mapfile -t OP_NAMESPACES < <(
+        oc get subscriptions.operators.coreos.com -A -o=json \
+        | jq --raw-output ".items[] | select((.spec.name // \"\") | contains(\"${OP_NAME}\")) | .metadata.namespace"
+    )
+    # if there are no subscriptions(OLM v0), then get the namespaces from the ClusterExtension(OLM v1)
+    mapfile -t OP_NAMESPACES < <(
+        oc get clusterextension -o json \
+        | jq --raw-output ".items[] | select((.metadata.name // \"\") | contains(\"${OP_NAME}\")) | .spec.namespace"
+    )
+
+    [ ${#OP_NAMESPACES[@]} -eq 0 ] && continue
     for OP_NS in "${OP_NAMESPACES[@]}"; do
-        if ! printf "%s\n" "${named_resources[@]}" | grep -xq "ns/$OP_NS"; then
-            named_resources+=(ns/${OP_NS})
+        already_added=false
+        for existing in "${named_resources[@]}"; do
+            if [ "$existing" = "ns/${OP_NS}" ]; then
+                already_added=true
+                break
+            fi
+        done
+        if [ "$already_added" = false ]; then
+            named_resources+=("ns/${OP_NS}")
         fi
     done
 done
-
 # Medik8s pods
 # Gathering pod/podname does not collect logs, that is only done for namespaces. So no need to gather pods explicitly.
 # Leaving it here in case things change...
