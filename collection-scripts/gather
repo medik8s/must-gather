@@ -29,8 +29,8 @@ for OP_NAME in "${operators[@]}"; do
         oc get subscriptions.operators.coreos.com -A -o=json \
         | jq --raw-output ".items[] | select((.spec.name // \"\") | contains(\"${OP_NAME}\")) | .metadata.namespace"
     )
-    # if there are no subscriptions(OLM v0), then get the namespaces from the ClusterExtension(OLM v1)
-    mapfile -t OP_NAMESPACES < <(
+    # also gather namespaces from ClusterExtension (OLM v1) without overwriting subscription results
+    mapfile -O ${#OP_NAMESPACES[@]} -t OP_NAMESPACES < <(
         oc get clusterextension -o json \
         | jq --raw-output ".items[] | select((.metadata.name // \"\") | contains(\"${OP_NAME}\")) | .spec.namespace"
     )
