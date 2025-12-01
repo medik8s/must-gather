@@ -20,6 +20,8 @@ operators=(
     machine-deletion-remediation
     fence-agents-remediation
 )
+# Search for suggested namespace
+named_resources=(ns/openshift-workload-availability)
 for OP_NAME in "${operators[@]}"; do
     OP_NAMESPACES=()
     # get namespaces of subscriptions(OLM v0)
