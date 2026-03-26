@@ -4,10 +4,14 @@ IMAGE=$( oc status | grep '^pod')
 
 function version() {
   # get version from image (major.minor.micro, e.g. v4.11.0)
-  version=v$(sed -n -r -e 's/.*(([[:digit:]])+\.([[:digit:]])+\.([[:digit:]])+).*/\1/p' <<< "$IMAGE")
+  local extracted
+  extracted=$(sed -n -r -e 's/.*(([[:digit:]])+\.([[:digit:]])+\.([[:digit:]])+).*/\1/p' <<< "$IMAGE")
 
-  # if version is still not found, use 0.0.0-unknown
-  [ -z "${version}" ] && version="0.0.0-unknown"
+  if [ -n "${extracted}" ]; then
+    version="v${extracted}"
+  else
+    version="0.0.0-unknown"
+  fi
 
   echo "${version}"
 }
@@ -19,6 +23,6 @@ function imageId() {
   # if image_id is not found, use Unknown
   [ -z "${imageId}" ] && imageId="Unknown-Image"
 
-echo "${imageId}"
+  echo "${imageId}"
 
 }
