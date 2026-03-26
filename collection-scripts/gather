@@ -1,6 +1,7 @@
 #!/bin/bash
 
 # generate /must-gather/version file
+# shellcheck source=collection-scripts/version
 . version
 echo "medik8s/must-gather" > /must-gather/version # imageName - Source repo identifier
 version >> /must-gather/version # imageVersion  - Build version
@@ -63,11 +64,13 @@ group_resources+=(machinehealthchecks)
 
 # Medik8s CRDs
 MEDIK8S_CRDS=$(oc get crds -o jsonpath='{range .items[*]}{"crd/"}{.metadata.name}{"\n"}{end}' | grep 'medik8s' | sed -z 's/\n/ /g')
-named_resources+=(${MEDIK8S_CRDS})
+read -ra medik8s_crds_arr <<< "${MEDIK8S_CRDS}"
+named_resources+=("${medik8s_crds_arr[@]}")
 
 # Medik8s CRs
 MEDIK8S_CRS=$(oc get crds -o jsonpath='{range .items[*]}{.metadata.name}{"\n"}{end}' | grep 'medik8s' | sed -z 's/\n/ /g')
-group_resources+=(${MEDIK8S_CRS})
+read -ra medik8s_crs_arr <<< "${MEDIK8S_CRS}"
+group_resources+=("${medik8s_crs_arr[@]}")
 
 # Run the Collection of Resources using inspect
 oc adm inspect --dest-dir must-gather --rotated-pod-logs --all-namespaces "${named_resources[@]}"
