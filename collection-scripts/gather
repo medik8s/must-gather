@@ -20,6 +20,7 @@ operators=(
     node-maintenance-operator
     machine-deletion-remediation
     fence-agents-remediation
+    storage-based-remediation
 )
 # Search for suggested namespace
 named_resources=(ns/openshift-workload-availability)
