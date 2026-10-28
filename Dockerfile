@@ -1,6 +1,6 @@
 # oc
 #@follow_tag(registry.redhat.io/openshift4/ose-cli-rhel9:v4.22)
-FROM registry.redhat.io/openshift4/ose-cli-rhel9:v4.22 AS ose-cli
+FROM quay.io/openshift/origin-cli:4.22 AS ose-cli
 
 FROM registry.access.redhat.com/ubi9/ubi-minimal AS builder
 RUN microdnf install -y tar rsync jq && microdnf clean all
