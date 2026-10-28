@@ -1,13 +1,11 @@
-FROM quay.io/openshift/origin-must-gather:4.22 AS builder
+# oc
+#@follow_tag(registry.redhat.io/openshift4/ose-cli-rhel9:v4.22)
+FROM registry.redhat.io/openshift4/ose-cli-rhel9:v4.22 AS ose-cli
 
-FROM registry.access.redhat.com/ubi9/ubi-minimal
-RUN microdnf install -y tar rsync jq
+FROM registry.access.redhat.com/ubi9/ubi-minimal AS builder
+RUN microdnf install -y tar rsync jq && microdnf clean all
 
-COPY --from=builder /usr/bin/oc /usr/bin/oc
-
-# Save original gather script
-COPY --from=builder /usr/bin/gather /usr/bin/gather_original
-COPY --from=builder /usr/bin/version /usr/bin/version_original
+COPY --from=ose-cli /usr/bin/oc /usr/bin/oc
 
 # Copy all collection scripts to /usr/bin
 COPY collection-scripts/* /usr/bin/
